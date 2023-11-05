@@ -1,0 +1,2055 @@
+[gd_scene load_steps=129 format=3 uid="uid://6vcltdhfmf24"]
+
+[ext_resource type="Shader" path="res://Shaders/moss2/take2.gdshader" id="1_5jjhh"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss31.gd" id="1_x3vtl"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss12.gd" id="2_2bfw0"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss0.gd" id="2_3eo2e"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss30.gd" id="2_6vmep"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss11.gd" id="2_eyr07"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss1.gd" id="2_pe37u"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss25.gd" id="2_tlsss"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss29.gd" id="3_ac0w5"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss24.gd" id="3_mdo0h"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss10.gd" id="3_reomf"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss9.gd" id="4_f7y4h"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss23.gd" id="4_plrbd"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss28.gd" id="4_qb7qa"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss22.gd" id="5_8jmwq"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss8.gd" id="5_64j2q"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss27.gd" id="5_625vj"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss7.gd" id="6_7sdo4"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss26.gd" id="6_mtq3a"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss21.gd" id="6_sseg2"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss20.gd" id="7_8dsop"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss6.gd" id="7_ujhhb"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss5.gd" id="8_cwofn"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss19.gd" id="8_fcsup"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss18.gd" id="9_c4vim"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss4.gd" id="9_saaxt"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss17.gd" id="10_fcpe0"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss3.gd" id="10_oxdex"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss16.gd" id="11_6nncb"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss2.gd" id="11_sp27y"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss15.gd" id="12_iobuo"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss14.gd" id="13_bpq8g"]
+[ext_resource type="Script" path="res://Scripts/moss2Scripts/moss13.gd" id="14_2ktga"]
+
+[sub_resource type="Shader" id="Shader_xjru0"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0xrc8"]
+render_priority = 0
+shader = SubResource("Shader_xjru0")
+shader_parameter/index = 31.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_sr7pk"]
+material = SubResource("ShaderMaterial_0xrc8")
+
+[sub_resource type="Shader" id="Shader_g0hxv"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mb5oj"]
+render_priority = 0
+shader = SubResource("Shader_g0hxv")
+shader_parameter/index = 30.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_dmdr4"]
+material = SubResource("ShaderMaterial_mb5oj")
+
+[sub_resource type="Shader" id="Shader_dsxgu"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hpbbh"]
+render_priority = 0
+shader = SubResource("Shader_dsxgu")
+shader_parameter/index = 29.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_1dl8q"]
+material = SubResource("ShaderMaterial_hpbbh")
+
+[sub_resource type="Shader" id="Shader_vfy05"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6o7w5"]
+render_priority = 0
+shader = SubResource("Shader_vfy05")
+shader_parameter/index = 28.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_41kby"]
+material = SubResource("ShaderMaterial_6o7w5")
+
+[sub_resource type="Shader" id="Shader_c3vmh"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sjv70"]
+render_priority = 0
+shader = SubResource("Shader_c3vmh")
+shader_parameter/index = 27.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_7sva8"]
+material = SubResource("ShaderMaterial_sjv70")
+
+[sub_resource type="Shader" id="Shader_dk07e"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4xlo4"]
+render_priority = 0
+shader = SubResource("Shader_dk07e")
+shader_parameter/index = 26.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_yjfjp"]
+material = SubResource("ShaderMaterial_4xlo4")
+
+[sub_resource type="Shader" id="Shader_ndq1q"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5j65s"]
+render_priority = 0
+shader = SubResource("Shader_ndq1q")
+shader_parameter/index = 25.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_dv3u4"]
+material = SubResource("ShaderMaterial_5j65s")
+
+[sub_resource type="Shader" id="Shader_0w6dl"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bjl2e"]
+render_priority = 0
+shader = SubResource("Shader_0w6dl")
+shader_parameter/index = 24.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_i1bra"]
+material = SubResource("ShaderMaterial_bjl2e")
+
+[sub_resource type="Shader" id="Shader_cx51u"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_blc65"]
+render_priority = 0
+shader = SubResource("Shader_cx51u")
+shader_parameter/index = 23.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_2twvu"]
+material = SubResource("ShaderMaterial_blc65")
+
+[sub_resource type="Shader" id="Shader_ob0uj"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gejox"]
+render_priority = 0
+shader = SubResource("Shader_ob0uj")
+shader_parameter/index = 22.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_82bdg"]
+material = SubResource("ShaderMaterial_gejox")
+
+[sub_resource type="Shader" id="Shader_od8sl"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bh8i3"]
+render_priority = 0
+shader = SubResource("Shader_od8sl")
+shader_parameter/index = 21.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_4cant"]
+material = SubResource("ShaderMaterial_bh8i3")
+
+[sub_resource type="Shader" id="Shader_o5x7a"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_r16p1"]
+render_priority = 0
+shader = SubResource("Shader_o5x7a")
+shader_parameter/index = 20.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_ooyp3"]
+material = SubResource("ShaderMaterial_r16p1")
+
+[sub_resource type="Shader" id="Shader_fjc7e"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8sxqh"]
+render_priority = 0
+shader = SubResource("Shader_fjc7e")
+shader_parameter/index = 19.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_1gvna"]
+material = SubResource("ShaderMaterial_8sxqh")
+
+[sub_resource type="Shader" id="Shader_oihoq"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_374ka"]
+render_priority = 0
+shader = SubResource("Shader_oihoq")
+shader_parameter/index = 18.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_ma0fn"]
+material = SubResource("ShaderMaterial_374ka")
+
+[sub_resource type="Shader" id="Shader_47t6j"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3ccof"]
+render_priority = 0
+shader = SubResource("Shader_47t6j")
+shader_parameter/index = 17.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_wb7u2"]
+material = SubResource("ShaderMaterial_3ccof")
+
+[sub_resource type="Shader" id="Shader_nl6va"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nca4i"]
+render_priority = 0
+shader = SubResource("Shader_nl6va")
+shader_parameter/index = 16.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_lfkm1"]
+material = SubResource("ShaderMaterial_nca4i")
+
+[sub_resource type="Shader" id="Shader_2786o"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nj8ec"]
+render_priority = 0
+shader = SubResource("Shader_2786o")
+shader_parameter/index = 15.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_lt3xu"]
+material = SubResource("ShaderMaterial_nj8ec")
+
+[sub_resource type="Shader" id="Shader_35yq5"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pmnad"]
+render_priority = 0
+shader = SubResource("Shader_35yq5")
+shader_parameter/index = 14.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_1qm12"]
+material = SubResource("ShaderMaterial_pmnad")
+
+[sub_resource type="Shader" id="Shader_gufjd"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_47jyj"]
+render_priority = 0
+shader = SubResource("Shader_gufjd")
+shader_parameter/index = 13.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_yugoa"]
+material = SubResource("ShaderMaterial_47jyj")
+
+[sub_resource type="Shader" id="Shader_1q05a"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jrdqo"]
+render_priority = 0
+shader = SubResource("Shader_1q05a")
+shader_parameter/index = 12.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_alcgh"]
+material = SubResource("ShaderMaterial_jrdqo")
+
+[sub_resource type="Shader" id="Shader_dg2jw"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_r7b1n"]
+render_priority = 0
+shader = SubResource("Shader_dg2jw")
+shader_parameter/index = 11.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_01cvw"]
+material = SubResource("ShaderMaterial_r7b1n")
+
+[sub_resource type="Shader" id="Shader_03jph"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uumwc"]
+render_priority = 0
+shader = SubResource("Shader_03jph")
+shader_parameter/index = 10.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_cb7l8"]
+material = SubResource("ShaderMaterial_uumwc")
+
+[sub_resource type="Shader" id="Shader_u30w5"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_45b46"]
+render_priority = 0
+shader = SubResource("Shader_u30w5")
+shader_parameter/index = 9.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_rto3x"]
+material = SubResource("ShaderMaterial_45b46")
+
+[sub_resource type="Shader" id="Shader_fyg6c"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wlnhc"]
+render_priority = 0
+shader = SubResource("Shader_fyg6c")
+shader_parameter/index = 8.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_a8gas"]
+material = SubResource("ShaderMaterial_wlnhc")
+
+[sub_resource type="Shader" id="Shader_yudbj"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1hy41"]
+render_priority = 0
+shader = SubResource("Shader_yudbj")
+shader_parameter/index = 7.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_6koyh"]
+material = SubResource("ShaderMaterial_1hy41")
+
+[sub_resource type="Shader" id="Shader_sfcgs"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ofiid"]
+render_priority = 0
+shader = SubResource("Shader_sfcgs")
+shader_parameter/index = 6.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_7r6kw"]
+material = SubResource("ShaderMaterial_ofiid")
+
+[sub_resource type="Shader" id="Shader_f8mr0"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3kv3o"]
+render_priority = 0
+shader = SubResource("Shader_f8mr0")
+shader_parameter/index = 5.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_als5j"]
+material = SubResource("ShaderMaterial_3kv3o")
+
+[sub_resource type="Shader" id="Shader_64ieo"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7c3sh"]
+render_priority = 0
+shader = SubResource("Shader_64ieo")
+shader_parameter/index = 4.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_4406a"]
+material = SubResource("ShaderMaterial_7c3sh")
+
+[sub_resource type="Shader" id="Shader_e8yro"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_76fc0"]
+render_priority = 0
+shader = SubResource("Shader_e8yro")
+shader_parameter/index = 3.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_iiryt"]
+material = SubResource("ShaderMaterial_76fc0")
+
+[sub_resource type="Shader" id="Shader_purex"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_56k05"]
+render_priority = 0
+shader = SubResource("Shader_purex")
+shader_parameter/index = 2.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_8d5wh"]
+material = SubResource("ShaderMaterial_56k05")
+
+[sub_resource type="Shader" id="Shader_d2w3l"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 1200.;
+const float rngDensityMultiplier = .8;
+const vec3 color1 = vec3(.24, .325, .145);
+const vec3 color2 = vec3(.64, .77, .376);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	if(!(disFromCenter > thickness*(rng-percentage)) || index == 0.){
+		vec3 color;
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*percentage+color1.r;
+		color.g = (color2.g-color1.g)*percentage+color1.g;
+		color.b = (color2.b-color1.b)*percentage+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_we6fa"]
+render_priority = 0
+shader = SubResource("Shader_d2w3l")
+shader_parameter/index = 1.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_vxda4"]
+material = SubResource("ShaderMaterial_we6fa")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jj160"]
+render_priority = 0
+shader = ExtResource("1_5jjhh")
+shader_parameter/index = 0.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.02
+shader_parameter/heightAttenuation = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_os0ya"]
+material = SubResource("ShaderMaterial_jj160")
+
+[node name="moss2" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.00545853, 0.683778)
+
+[node name="moss31" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_sr7pk")
+skeleton = NodePath("../moss15")
+script = ExtResource("1_x3vtl")
+
+[node name="moss30" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_dmdr4")
+skeleton = NodePath("../moss15")
+script = ExtResource("2_6vmep")
+
+[node name="moss29" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_1dl8q")
+skeleton = NodePath("../moss15")
+script = ExtResource("3_ac0w5")
+
+[node name="moss28" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_41kby")
+skeleton = NodePath("../moss15")
+script = ExtResource("4_qb7qa")
+
+[node name="moss27" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_7sva8")
+skeleton = NodePath("../moss15")
+script = ExtResource("5_625vj")
+
+[node name="moss26" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_yjfjp")
+skeleton = NodePath("../moss15")
+script = ExtResource("6_mtq3a")
+
+[node name="moss25" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_dv3u4")
+skeleton = NodePath("../moss15")
+script = ExtResource("2_tlsss")
+
+[node name="moss24" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_i1bra")
+skeleton = NodePath("../moss15")
+script = ExtResource("3_mdo0h")
+
+[node name="moss23" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_2twvu")
+skeleton = NodePath("../moss15")
+script = ExtResource("4_plrbd")
+
+[node name="moss22" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_82bdg")
+skeleton = NodePath("../moss15")
+script = ExtResource("5_8jmwq")
+
+[node name="moss21" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_4cant")
+skeleton = NodePath("../moss15")
+script = ExtResource("6_sseg2")
+
+[node name="moss20" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_ooyp3")
+skeleton = NodePath("../moss15")
+script = ExtResource("7_8dsop")
+
+[node name="moss19" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_1gvna")
+skeleton = NodePath("../moss15")
+script = ExtResource("8_fcsup")
+
+[node name="moss18" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_ma0fn")
+skeleton = NodePath("../moss15")
+script = ExtResource("9_c4vim")
+
+[node name="moss17" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_wb7u2")
+skeleton = NodePath("../moss15")
+script = ExtResource("10_fcpe0")
+
+[node name="moss16" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_lfkm1")
+skeleton = NodePath("../moss15")
+script = ExtResource("11_6nncb")
+
+[node name="moss15" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_lt3xu")
+script = ExtResource("12_iobuo")
+
+[node name="moss14" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_1qm12")
+script = ExtResource("13_bpq8g")
+
+[node name="moss13" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_yugoa")
+script = ExtResource("14_2ktga")
+
+[node name="moss12" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_alcgh")
+script = ExtResource("2_2bfw0")
+
+[node name="moss11" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_01cvw")
+script = ExtResource("2_eyr07")
+
+[node name="moss10" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_cb7l8")
+script = ExtResource("3_reomf")
+
+[node name="moss9" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_rto3x")
+script = ExtResource("4_f7y4h")
+
+[node name="moss8" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_a8gas")
+script = ExtResource("5_64j2q")
+
+[node name="moss7" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_6koyh")
+script = ExtResource("6_7sdo4")
+
+[node name="moss6" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_7r6kw")
+script = ExtResource("7_ujhhb")
+
+[node name="moss5" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_als5j")
+script = ExtResource("8_cwofn")
+
+[node name="moss4" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_4406a")
+script = ExtResource("9_saaxt")
+
+[node name="moss3" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_iiryt")
+script = ExtResource("10_oxdex")
+
+[node name="moss2" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_8d5wh")
+script = ExtResource("11_sp27y")
+
+[node name="moss1" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_vxda4")
+script = ExtResource("2_pe37u")
+
+[node name="moss0" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_os0ya")
+script = ExtResource("2_3eo2e")
