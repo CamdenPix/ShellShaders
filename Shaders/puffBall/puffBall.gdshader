@@ -16,7 +16,7 @@ vec4 getWoolTexturePixel(vec2 position){
 uniform float index;
 uniform float totalShells;
 uniform float shellHeight;
-const float density = 800.;
+const float density = 2000.;
 const float rngDensityMultiplier = .9;
 
 void vertex() {

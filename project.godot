@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Shell Shaders"
-run/main_scene="res://straw_roof.tscn"
+run/main_scene="res://minecraft_block.tscn"
 config/features=PackedStringArray("4.1", "Forward Plus")
 config/icon="res://icon.svg"
 
