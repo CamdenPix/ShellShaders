@@ -1,7 +1,8 @@
-[gd_scene load_steps=53 format=3 uid="uid://c7hwe0xsaj2g4"]
+[gd_scene load_steps=54 format=3 uid="uid://c7hwe0xsaj2g4"]
 
 [ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop15.gd" id="1_1hna4"]
 [ext_resource type="Shader" path="res://Shaders/minecraftAlphaLogo/greentop.gdshader" id="1_cha6l"]
+[ext_resource type="Script" path="res://Scripts/minecraft_block.gd" id="1_eqkl2"]
 [ext_resource type="Texture2D" uid="uid://begcniryd2x64" path="res://Shaders/minecraftAlphaLogo/dirt.webp" id="1_jq3m0"]
 [ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop14.gd" id="2_r7ja5"]
 [ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop0.gd" id="2_tycq1"]
@@ -219,6 +220,7 @@ albedo_texture = ExtResource("1_jq3m0")
 uv1_scale = Vector3(3, 2, 1)
 
 [node name="minecraftBlock" type="Node3D"]
+script = ExtResource("1_eqkl2")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.715801, -0.159572, 0.679828, 0.00441115, 0.974555, 0.224107, -0.698291, -0.157417, 0.698291, 0.91, 0.430634, 0.91)

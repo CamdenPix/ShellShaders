@@ -1,7 +1,8 @@
-[gd_scene load_steps=145 format=3 uid="uid://cb34nn5awujri"]
+[gd_scene load_steps=146 format=3 uid="uid://cb34nn5awujri"]
 
 [ext_resource type="Shader" path="res://Shaders/strawRoof/roof.gdshader" id="1_0y2d2"]
 [ext_resource type="Script" path="res://Scripts/strawRoofScript/roof23.gd" id="1_05ts1"]
+[ext_resource type="Script" path="res://Scripts/straw_roof.gd" id="1_ubwke"]
 [ext_resource type="Script" path="res://Scripts/strawRoofScript/roof11.gd" id="2_jrbbd"]
 [ext_resource type="Script" path="res://Scripts/strawRoofScript/roof0.gd" id="2_ot4sh"]
 [ext_resource type="Script" path="res://Scripts/strawRoofScript/roof22.gd" id="2_um8pn"]
@@ -1818,6 +1819,7 @@ material = SubResource("ShaderMaterial_4ppm7")
 size = Vector3(2, 2, 3)
 
 [node name="StrawRoof" type="Node3D"]
+script = ExtResource("1_ubwke")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.680051, -0.453121, 0.576378, -0.00119677, 0.785464, 0.618906, -0.733164, -0.421578, 0.533613, 2.63104, 1.89505, 1.28715)

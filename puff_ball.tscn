@@ -1,7 +1,8 @@
-[gd_scene load_steps=18 format=3 uid="uid://bshk30awqhnjt"]
+[gd_scene load_steps=19 format=3 uid="uid://bshk30awqhnjt"]
 
 [ext_resource type="Script" path="res://Scripts/puffBallScripts/wool3.gd" id="1_cxw7w"]
 [ext_resource type="Shader" path="res://Shaders/puffBall/puffBall.gdshader" id="1_ejyf4"]
+[ext_resource type="Script" path="res://Scripts/puff_ball.gd" id="1_nfpli"]
 [ext_resource type="Script" path="res://Scripts/puffBallScripts/wool1.gd" id="2_6lskg"]
 [ext_resource type="Texture2D" uid="uid://femr6fhuj45k" path="res://Shaders/puffBall/wool.png" id="2_ll1g1"]
 [ext_resource type="Script" path="res://Scripts/puffBallScripts/wool0.gd" id="2_r4udi"]
@@ -61,6 +62,7 @@ shader_parameter/woolTexture = ExtResource("2_ll1g1")
 material = SubResource("ShaderMaterial_quj8h")
 
 [node name="PuffBall" type="Node3D"]
+script = ExtResource("1_nfpli")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.86616, 0.229997, -0.443699, -0.0258523, 0.907242, 0.419813, 0.499098, -0.352155, 0.791763, -0.760162, 0.78987, 1.34827)

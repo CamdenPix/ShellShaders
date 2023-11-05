@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3 uid="uid://bemvcwe4aknil"]
+
+[ext_resource type="Script" path="res://Scripts/Node2D.gd" id="1_8cfw5"]
+
+[sub_resource type="Theme" id="Theme_h1hvh"]
+default_font_size = 44
+
+[sub_resource type="Theme" id="Theme_ri8vn"]
+default_font_size = 24
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_8cfw5")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+offset_left = -279.0
+offset_top = -164.0
+offset_right = 282.0
+offset_bottom = -49.0
+theme = SubResource("Theme_h1hvh")
+text = "My Shell Shader Examples"
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="."]
+offset_left = -355.0
+offset_top = 64.0
+offset_right = 359.0
+offset_bottom = 174.0
+theme = SubResource("Theme_ri8vn")
+text = "Use left and right arrows keys to switch between 3 examples
+	Check the README file for more information about what this project is and how it works."
