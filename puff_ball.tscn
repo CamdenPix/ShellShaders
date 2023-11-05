@@ -1,0 +1,82 @@
+[gd_scene load_steps=18 format=3 uid="uid://bshk30awqhnjt"]
+
+[ext_resource type="Script" path="res://Scripts/puffBallScripts/wool3.gd" id="1_cxw7w"]
+[ext_resource type="Shader" path="res://Shaders/puffBall/puffBall.gdshader" id="1_ejyf4"]
+[ext_resource type="Script" path="res://Scripts/puffBallScripts/wool1.gd" id="2_6lskg"]
+[ext_resource type="Texture2D" uid="uid://femr6fhuj45k" path="res://Shaders/puffBall/wool.png" id="2_ll1g1"]
+[ext_resource type="Script" path="res://Scripts/puffBallScripts/wool0.gd" id="2_r4udi"]
+[ext_resource type="Script" path="res://Scripts/puffBallScripts/wool2.gd" id="2_sji21"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_d46bh"]
+load_path = "res://.godot/imported/wool.png-cf8d8e4ca9486cc59b1ff6f9910f48d7.s3tc.ctex"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_psx2y"]
+render_priority = 0
+shader = ExtResource("1_ejyf4")
+shader_parameter/index = 3.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.015
+shader_parameter/woolTexture = SubResource("CompressedTexture2D_d46bh")
+
+[sub_resource type="TorusMesh" id="TorusMesh_uck6y"]
+material = SubResource("ShaderMaterial_psx2y")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_awov3"]
+load_path = "res://.godot/imported/wool.png-cf8d8e4ca9486cc59b1ff6f9910f48d7.s3tc.ctex"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5o4yl"]
+render_priority = 0
+shader = ExtResource("1_ejyf4")
+shader_parameter/index = 2.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.015
+shader_parameter/woolTexture = SubResource("CompressedTexture2D_awov3")
+
+[sub_resource type="TorusMesh" id="TorusMesh_lw8tm"]
+material = SubResource("ShaderMaterial_5o4yl")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_hck3e"]
+load_path = "res://.godot/imported/wool.png-cf8d8e4ca9486cc59b1ff6f9910f48d7.s3tc.ctex"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gykjh"]
+render_priority = 0
+shader = ExtResource("1_ejyf4")
+shader_parameter/index = 1.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.015
+shader_parameter/woolTexture = SubResource("CompressedTexture2D_hck3e")
+
+[sub_resource type="TorusMesh" id="TorusMesh_w1k1p"]
+material = SubResource("ShaderMaterial_gykjh")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_quj8h"]
+render_priority = 0
+shader = ExtResource("1_ejyf4")
+shader_parameter/index = 0.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.015
+shader_parameter/woolTexture = ExtResource("2_ll1g1")
+
+[sub_resource type="TorusMesh" id="TorusMesh_y24b7"]
+material = SubResource("ShaderMaterial_quj8h")
+
+[node name="PuffBall" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.86616, 0.229997, -0.443699, -0.0258523, 0.907242, 0.419813, 0.499098, -0.352155, 0.791763, -0.760162, 0.78987, 1.34827)
+
+[node name="wool3" type="MeshInstance3D" parent="."]
+mesh = SubResource("TorusMesh_uck6y")
+script = ExtResource("1_cxw7w")
+
+[node name="wool2" type="MeshInstance3D" parent="."]
+mesh = SubResource("TorusMesh_lw8tm")
+script = ExtResource("2_sji21")
+
+[node name="wool1" type="MeshInstance3D" parent="."]
+mesh = SubResource("TorusMesh_w1k1p")
+script = ExtResource("2_6lskg")
+
+[node name="wool0" type="MeshInstance3D" parent="."]
+mesh = SubResource("TorusMesh_y24b7")
+script = ExtResource("2_r4udi")
