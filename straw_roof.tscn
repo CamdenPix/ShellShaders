@@ -1,0 +1,1955 @@
+[gd_scene load_steps=145 format=3 uid="uid://cb34nn5awujri"]
+
+[ext_resource type="Shader" path="res://Shaders/strawRoof/roof.gdshader" id="1_0y2d2"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof23.gd" id="1_05ts1"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof11.gd" id="2_jrbbd"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof0.gd" id="2_ot4sh"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof22.gd" id="2_um8pn"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof21.gd" id="3_hdet7"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof10.gd" id="3_vynkf"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof9.gd" id="4_4poud"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof20.gd" id="4_ut8uh"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof8.gd" id="5_bx6qj"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof19.gd" id="5_m34u6"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof18.gd" id="6_7q3ed"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof7.gd" id="6_wcs4e"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof6.gd" id="7_kjsep"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof17.gd" id="7_rslid"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof5.gd" id="8_mpd2u"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof16.gd" id="8_ta3yf"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof15.gd" id="9_dlmdj"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof4.gd" id="9_i7rf2"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof14.gd" id="10_5rdpl"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof3.gd" id="10_71beq"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof2.gd" id="11_ke3w2"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof13.gd" id="11_oit4j"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof1.gd" id="12_a1byd"]
+[ext_resource type="Script" path="res://Scripts/strawRoofScript/roof12.gd" id="12_gsm0s"]
+
+[sub_resource type="Shader" id="Shader_k4mae"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_4fveo"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_id01u"]
+noise = SubResource("FastNoiseLite_4fveo")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_msd7b"]
+render_priority = 0
+shader = SubResource("Shader_k4mae")
+shader_parameter/index = 23.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_id01u")
+
+[sub_resource type="PrismMesh" id="PrismMesh_2o6h5"]
+material = SubResource("ShaderMaterial_msd7b")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_n80td"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_cvfaf"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_f8vqn"]
+noise = SubResource("FastNoiseLite_cvfaf")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pewfx"]
+render_priority = 0
+shader = SubResource("Shader_n80td")
+shader_parameter/index = 22.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_f8vqn")
+
+[sub_resource type="PrismMesh" id="PrismMesh_rjggb"]
+material = SubResource("ShaderMaterial_pewfx")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_ftr5w"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_yo0nr"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_veqlf"]
+noise = SubResource("FastNoiseLite_yo0nr")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cwivq"]
+render_priority = 0
+shader = SubResource("Shader_ftr5w")
+shader_parameter/index = 21.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_veqlf")
+
+[sub_resource type="PrismMesh" id="PrismMesh_dujuk"]
+material = SubResource("ShaderMaterial_cwivq")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_elhk2"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_4hcrt"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_cn84b"]
+noise = SubResource("FastNoiseLite_4hcrt")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dbxdk"]
+render_priority = 0
+shader = SubResource("Shader_elhk2")
+shader_parameter/index = 20.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_cn84b")
+
+[sub_resource type="PrismMesh" id="PrismMesh_wp26l"]
+material = SubResource("ShaderMaterial_dbxdk")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_tw7y6"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_hg770"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_fjt1y"]
+noise = SubResource("FastNoiseLite_hg770")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d7w1q"]
+render_priority = 0
+shader = SubResource("Shader_tw7y6")
+shader_parameter/index = 19.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_fjt1y")
+
+[sub_resource type="PrismMesh" id="PrismMesh_p27qb"]
+material = SubResource("ShaderMaterial_d7w1q")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_25dd6"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ei28x"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_h6upd"]
+noise = SubResource("FastNoiseLite_ei28x")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xuvjd"]
+render_priority = 0
+shader = SubResource("Shader_25dd6")
+shader_parameter/index = 18.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_h6upd")
+
+[sub_resource type="PrismMesh" id="PrismMesh_uorbc"]
+material = SubResource("ShaderMaterial_xuvjd")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_eyf76"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_4taoa"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_y0u4l"]
+noise = SubResource("FastNoiseLite_4taoa")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yr6lm"]
+render_priority = 0
+shader = SubResource("Shader_eyf76")
+shader_parameter/index = 17.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_y0u4l")
+
+[sub_resource type="PrismMesh" id="PrismMesh_jy8e8"]
+material = SubResource("ShaderMaterial_yr6lm")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_37vy7"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_sp6a7"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_4vtgt"]
+noise = SubResource("FastNoiseLite_sp6a7")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_shkxk"]
+render_priority = 0
+shader = SubResource("Shader_37vy7")
+shader_parameter/index = 16.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_4vtgt")
+
+[sub_resource type="PrismMesh" id="PrismMesh_hmwhx"]
+material = SubResource("ShaderMaterial_shkxk")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_hfm34"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rcskv"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_772q5"]
+noise = SubResource("FastNoiseLite_rcskv")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yhq7a"]
+render_priority = 0
+shader = SubResource("Shader_hfm34")
+shader_parameter/index = 15.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_772q5")
+
+[sub_resource type="PrismMesh" id="PrismMesh_yp8hu"]
+material = SubResource("ShaderMaterial_yhq7a")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_ojk0w"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_k80qx"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_lxleb"]
+noise = SubResource("FastNoiseLite_k80qx")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0spe0"]
+render_priority = 0
+shader = SubResource("Shader_ojk0w")
+shader_parameter/index = 14.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_lxleb")
+
+[sub_resource type="PrismMesh" id="PrismMesh_3od8d"]
+material = SubResource("ShaderMaterial_0spe0")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_y2dox"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_4d881"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_4e62l"]
+noise = SubResource("FastNoiseLite_4d881")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qvn3n"]
+render_priority = 0
+shader = SubResource("Shader_y2dox")
+shader_parameter/index = 13.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_4e62l")
+
+[sub_resource type="PrismMesh" id="PrismMesh_yvn25"]
+material = SubResource("ShaderMaterial_qvn3n")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_3g2ln"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_inahg"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_k2my4"]
+noise = SubResource("FastNoiseLite_inahg")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v1f8d"]
+render_priority = 0
+shader = SubResource("Shader_3g2ln")
+shader_parameter/index = 12.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_k2my4")
+
+[sub_resource type="PrismMesh" id="PrismMesh_1jfjf"]
+material = SubResource("ShaderMaterial_v1f8d")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_vvqww"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_vym13"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_72apj"]
+noise = SubResource("FastNoiseLite_vym13")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h4t7k"]
+render_priority = 0
+shader = SubResource("Shader_vvqww")
+shader_parameter/index = 11.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_72apj")
+
+[sub_resource type="PrismMesh" id="PrismMesh_vpla6"]
+material = SubResource("ShaderMaterial_h4t7k")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_fmh5a"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_vtnma"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_m1pcs"]
+noise = SubResource("FastNoiseLite_vtnma")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_owfvh"]
+render_priority = 0
+shader = SubResource("Shader_fmh5a")
+shader_parameter/index = 10.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_m1pcs")
+
+[sub_resource type="PrismMesh" id="PrismMesh_7qr7t"]
+material = SubResource("ShaderMaterial_owfvh")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_knwkr"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_iuvuf"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wntta"]
+noise = SubResource("FastNoiseLite_iuvuf")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_akfh4"]
+render_priority = 0
+shader = SubResource("Shader_knwkr")
+shader_parameter/index = 9.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_wntta")
+
+[sub_resource type="PrismMesh" id="PrismMesh_2wy2l"]
+material = SubResource("ShaderMaterial_akfh4")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_fkk4s"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_7n5wr"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_2tum6"]
+noise = SubResource("FastNoiseLite_7n5wr")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oyqbf"]
+render_priority = 0
+shader = SubResource("Shader_fkk4s")
+shader_parameter/index = 8.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_2tum6")
+
+[sub_resource type="PrismMesh" id="PrismMesh_2aqyu"]
+material = SubResource("ShaderMaterial_oyqbf")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_0iolt"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_gbveb"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_hon3d"]
+noise = SubResource("FastNoiseLite_gbveb")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_14g23"]
+render_priority = 0
+shader = SubResource("Shader_0iolt")
+shader_parameter/index = 7.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_hon3d")
+
+[sub_resource type="PrismMesh" id="PrismMesh_po6rf"]
+material = SubResource("ShaderMaterial_14g23")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_cej8e"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_m8tio"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_i1lpa"]
+noise = SubResource("FastNoiseLite_m8tio")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1oraa"]
+render_priority = 0
+shader = SubResource("Shader_cej8e")
+shader_parameter/index = 6.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_i1lpa")
+
+[sub_resource type="PrismMesh" id="PrismMesh_llkpm"]
+material = SubResource("ShaderMaterial_1oraa")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_h8qcv"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_8cbmf"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_8h23s"]
+noise = SubResource("FastNoiseLite_8cbmf")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg8uy"]
+render_priority = 0
+shader = SubResource("Shader_h8qcv")
+shader_parameter/index = 5.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_8h23s")
+
+[sub_resource type="PrismMesh" id="PrismMesh_c10gp"]
+material = SubResource("ShaderMaterial_bg8uy")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_lb0mk"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_lwjmd"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_yhdoi"]
+noise = SubResource("FastNoiseLite_lwjmd")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xe551"]
+render_priority = 0
+shader = SubResource("Shader_lb0mk")
+shader_parameter/index = 4.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_yhdoi")
+
+[sub_resource type="PrismMesh" id="PrismMesh_1xcla"]
+material = SubResource("ShaderMaterial_xe551")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_blbxb"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_4h5yi"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_clyf7"]
+noise = SubResource("FastNoiseLite_4h5yi")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_g27j1"]
+render_priority = 0
+shader = SubResource("Shader_blbxb")
+shader_parameter/index = 3.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_clyf7")
+
+[sub_resource type="PrismMesh" id="PrismMesh_w7qwq"]
+material = SubResource("ShaderMaterial_g27j1")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_dg5s0"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_b67ac"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_5k2j5"]
+noise = SubResource("FastNoiseLite_b67ac")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1ovrs"]
+render_priority = 0
+shader = SubResource("Shader_dg5s0")
+shader_parameter/index = 2.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_5k2j5")
+
+[sub_resource type="PrismMesh" id="PrismMesh_jrlxq"]
+material = SubResource("ShaderMaterial_1ovrs")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="Shader" id="Shader_yol5s"]
+code = "shader_type spatial;
+render_mode unshaded;
+//taken from \"Integer Hash - III\" by iq on Shadertoy
+float hash(uvec2 x)
+{
+    uvec2 q = 1103515245U * ( (x>>1U) ^ (x.yx) );
+    uint  n = 1103515245U * ( (q.x  ) ^ (q.y>>3U) );
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+uniform float index;
+uniform float totalShells;
+uniform float shellHeight;
+uniform float heightAttenuation;
+const float density = 75.;
+const float rngDensityMultiplier = .2;
+const vec3 color1 = vec3(.45, .47, .32);
+const vec3 color2 = vec3(.77, .83, .42);
+
+void vertex() {
+	vec3 normal = normalize(VERTEX); //get Vertex Normal
+	float percentOfHeight = index/totalShells; //find how far the shell needs to be extruded
+	percentOfHeight = pow(percentOfHeight, heightAttenuation); //less shells at the base, more at the top
+	float height = percentOfHeight*shellHeight;
+	VERTEX.xyz += normal*vec3(height); //extruded shell while keeping the shape
+}
+
+uniform sampler2D perlin;
+float getPerlinNoise(vec2 position){
+	return texture(perlin, position).x;
+}
+
+
+void fragment() {
+	float rng = hash(uvec2(uint(UV.x*density),uint(UV.y*density)));  //hash the UV for random texture
+	rng = pow(rng, rngDensityMultiplier);
+	vec2 center = fract(UV*density)*2.-1.; //the center of each \"pixel\"
+	float disFromCenter = sqrt(center.x*center.x+center.y*center.y); //the distance of a pixel away from the center
+	
+	float thickness = 1.;
+	float percentage = (index/totalShells); //percent of height
+	float width = -(percentage*percentage)+1.;
+	if((rng > percentage && width-pow(rng, 10.) > disFromCenter) || index == 0.){
+		vec3 color;
+		float colorPercent = getPerlinNoise(UV);
+		//Average out colors provided by user in RGB colorspace.
+		color.r = (color2.r-color1.r)*colorPercent+color1.r;
+		color.g = (color2.g-color1.g)*colorPercent+color1.g;
+		color.b = (color2.b-color1.b)*colorPercent+color1.b;
+		ALBEDO.xyz=color;
+	} else{
+		discard;
+	}
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_vs1ib"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mqtc2"]
+noise = SubResource("FastNoiseLite_vs1ib")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ip24e"]
+render_priority = 0
+shader = SubResource("Shader_yol5s")
+shader_parameter/index = 1.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_mqtc2")
+
+[sub_resource type="PrismMesh" id="PrismMesh_7gstk"]
+material = SubResource("ShaderMaterial_ip24e")
+size = Vector3(2, 2, 3)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_emd7l"]
+noise_type = 3
+frequency = 0.015
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_engm2"]
+noise = SubResource("FastNoiseLite_emd7l")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4ppm7"]
+render_priority = 0
+shader = ExtResource("1_0y2d2")
+shader_parameter/index = 0.0
+shader_parameter/totalShells = 32.0
+shader_parameter/shellHeight = 0.4
+shader_parameter/heightAttenuation = 0.65
+shader_parameter/perlin = SubResource("NoiseTexture2D_engm2")
+
+[sub_resource type="PrismMesh" id="PrismMesh_yof3e"]
+material = SubResource("ShaderMaterial_4ppm7")
+size = Vector3(2, 2, 3)
+
+[node name="StrawRoof" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.680051, -0.453121, 0.576378, -0.00119677, 0.785464, 0.618906, -0.733164, -0.421578, 0.533613, 2.63104, 1.89505, 1.28715)
+
+[node name="roof23" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_2o6h5")
+skeleton = NodePath("../roof15")
+script = ExtResource("1_05ts1")
+
+[node name="roof22" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_rjggb")
+skeleton = NodePath("../roof15")
+script = ExtResource("2_um8pn")
+
+[node name="roof21" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_dujuk")
+skeleton = NodePath(".")
+script = ExtResource("3_hdet7")
+
+[node name="roof20" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_wp26l")
+skeleton = NodePath(".")
+script = ExtResource("4_ut8uh")
+
+[node name="roof19" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_p27qb")
+skeleton = NodePath("../roof15")
+script = ExtResource("5_m34u6")
+
+[node name="roof18" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_uorbc")
+skeleton = NodePath("../roof15")
+script = ExtResource("6_7q3ed")
+
+[node name="roof17" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_jy8e8")
+skeleton = NodePath("../roof15")
+script = ExtResource("7_rslid")
+
+[node name="roof16" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_hmwhx")
+skeleton = NodePath("../roof15")
+script = ExtResource("8_ta3yf")
+
+[node name="roof15" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_yp8hu")
+script = ExtResource("9_dlmdj")
+
+[node name="roof14" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_3od8d")
+script = ExtResource("10_5rdpl")
+
+[node name="roof13" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_yvn25")
+skeleton = NodePath("../roof1")
+script = ExtResource("11_oit4j")
+
+[node name="roof12" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_1jfjf")
+skeleton = NodePath("../roof2")
+script = ExtResource("12_gsm0s")
+
+[node name="roof11" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_vpla6")
+script = ExtResource("2_jrbbd")
+
+[node name="roof10" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_7qr7t")
+script = ExtResource("3_vynkf")
+
+[node name="roof9" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_2wy2l")
+script = ExtResource("4_4poud")
+
+[node name="roof8" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_2aqyu")
+script = ExtResource("5_bx6qj")
+
+[node name="roof7" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_po6rf")
+script = ExtResource("6_wcs4e")
+
+[node name="roof6" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_llkpm")
+script = ExtResource("7_kjsep")
+
+[node name="roof5" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_c10gp")
+script = ExtResource("8_mpd2u")
+
+[node name="roof4" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_1xcla")
+script = ExtResource("9_i7rf2")
+
+[node name="roof3" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_w7qwq")
+skeleton = NodePath("../roof2")
+script = ExtResource("10_71beq")
+
+[node name="roof2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_jrlxq")
+skeleton = NodePath("../roof1")
+script = ExtResource("11_ke3w2")
+
+[node name="roof1" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_7gstk")
+script = ExtResource("12_a1byd")
+
+[node name="roof0" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_yof3e")
+script = ExtResource("2_ot4sh")

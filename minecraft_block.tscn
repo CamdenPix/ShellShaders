@@ -1,0 +1,308 @@
+[gd_scene load_steps=53 format=3 uid="uid://c7hwe0xsaj2g4"]
+
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop15.gd" id="1_1hna4"]
+[ext_resource type="Shader" path="res://Shaders/minecraftAlphaLogo/greentop.gdshader" id="1_cha6l"]
+[ext_resource type="Texture2D" uid="uid://begcniryd2x64" path="res://Shaders/minecraftAlphaLogo/dirt.webp" id="1_jq3m0"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop14.gd" id="2_r7ja5"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop0.gd" id="2_tycq1"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop13.gd" id="3_13eub"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop11.gd" id="5_bwdyo"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop12.gd" id="5_x1s8k"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop10.gd" id="6_aqlf4"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop9.gd" id="7_njso5"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop8.gd" id="8_55n8g"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop7.gd" id="9_awti8"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop6.gd" id="10_w17e3"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop5.gd" id="11_vt0av"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop4.gd" id="12_7t6c2"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop3.gd" id="13_r6dke"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop2.gd" id="14_eca6n"]
+[ext_resource type="Script" path="res://Scripts/minecraftBlockScripts/greentop1.gd" id="15_lgmg1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5bx7w"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 15.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_t26al"]
+material = SubResource("ShaderMaterial_5bx7w")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_60rdq"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 14.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_xqbmo"]
+material = SubResource("ShaderMaterial_60rdq")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vbk07"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 13.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_2uuo6"]
+material = SubResource("ShaderMaterial_vbk07")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_r7fny"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 12.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_638wu"]
+material = SubResource("ShaderMaterial_r7fny")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_t6j11"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 11.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_xm6to"]
+material = SubResource("ShaderMaterial_t6j11")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xca7k"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 10.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_jhbtp"]
+material = SubResource("ShaderMaterial_xca7k")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7wg6x"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 9.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_bvp4m"]
+material = SubResource("ShaderMaterial_7wg6x")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_463bf"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 8.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_be38o"]
+material = SubResource("ShaderMaterial_463bf")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_goik2"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 7.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ksslb"]
+material = SubResource("ShaderMaterial_goik2")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xjowu"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 6.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_53t0l"]
+material = SubResource("ShaderMaterial_xjowu")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h71y1"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 5.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_61ipo"]
+material = SubResource("ShaderMaterial_h71y1")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4r6bj"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 4.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_lyucx"]
+material = SubResource("ShaderMaterial_4r6bj")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ml5hq"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 3.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_u7brb"]
+material = SubResource("ShaderMaterial_ml5hq")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rqgfh"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 2.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_4rp5t"]
+material = SubResource("ShaderMaterial_rqgfh")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u1ynk"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 1.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_hfnei"]
+material = SubResource("ShaderMaterial_u1ynk")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h0bsw"]
+render_priority = 0
+shader = ExtResource("1_cha6l")
+shader_parameter/index = 0.0
+shader_parameter/totalShells = null
+shader_parameter/shellHeight = 0.1
+shader_parameter/heightAttenuation = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_gi7yt"]
+material = SubResource("ShaderMaterial_h0bsw")
+size = Vector3(1.001, 0.2, 1.001)
+
+[sub_resource type="BoxMesh" id="BoxMesh_r00ii"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dc2eg"]
+shading_mode = 0
+albedo_texture = ExtResource("1_jq3m0")
+uv1_scale = Vector3(3, 2, 1)
+
+[node name="minecraftBlock" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.715801, -0.159572, 0.679828, 0.00441115, 0.974555, 0.224107, -0.698291, -0.157417, 0.698291, 0.91, 0.430634, 0.91)
+
+[node name="greentop15" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_t26al")
+script = ExtResource("1_1hna4")
+
+[node name="greentop14" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_xqbmo")
+script = ExtResource("2_r7ja5")
+
+[node name="greentop13" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_2uuo6")
+script = ExtResource("3_13eub")
+
+[node name="greentop12" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_638wu")
+script = ExtResource("5_x1s8k")
+
+[node name="greentop11" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_xm6to")
+script = ExtResource("5_bwdyo")
+
+[node name="greentop10" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_jhbtp")
+script = ExtResource("6_aqlf4")
+
+[node name="greentop9" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_bvp4m")
+script = ExtResource("7_njso5")
+
+[node name="greentop8" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_be38o")
+script = ExtResource("8_55n8g")
+
+[node name="greentop7" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_ksslb")
+script = ExtResource("9_awti8")
+
+[node name="greentop6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_53t0l")
+script = ExtResource("10_w17e3")
+
+[node name="greentop5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_61ipo")
+script = ExtResource("11_vt0av")
+
+[node name="greentop4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_lyucx")
+script = ExtResource("12_7t6c2")
+
+[node name="greentop3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_u7brb")
+script = ExtResource("13_r6dke")
+
+[node name="greentop2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_4rp5t")
+script = ExtResource("14_eca6n")
+
+[node name="greentop1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_hfnei")
+script = ExtResource("15_lgmg1")
+
+[node name="greentop0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.411561, 0)
+mesh = SubResource("BoxMesh_gi7yt")
+script = ExtResource("2_tycq1")
+
+[node name="dirt" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_r00ii")
+surface_material_override/0 = SubResource("StandardMaterial3D_dc2eg")
