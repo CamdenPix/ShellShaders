@@ -7,9 +7,9 @@ Shell Shading is a technique used by technical artists as an illusion to make ob
 
 This means large areas can be covered by 32 plane meshs, and still look a good grass texture. Modern hardware can afford nicer grass, but Shell Shading is still used in many games for fur, moss, or straw as a cheap way to make a depth effect.
 
-In modern day Shell Shading is usually used to mimic fur, to great effect, and is also used to make certain objects look more fluffy, like the thick wool inside of a coat or helmet.
+In modern day Shell Shading is mostly used to mimic fur, to great effect, and it is also used to make certain objects look more fluffy, like the thick wool inside of a coat or helmet.
 
-The demonstrations in this project are not as refined, but have the same concepts. The minecraft block is the most simple, with the entire model only having 9 rectangular prism. The extruded prisms that make up the grass have their color changed based on how far they are from the original.
+The demonstrations in this project are not as refined do to time constraints, but have the same concepts. The minecraft block is the most simple, with the entire model only having 9 rectangular prism. The extruded prisms that make up the grass have their color changed based on how far they are from the original.
 
 The straw roof is uses a noise map to pull color as a demonstation that patterns can put onto the stack of shells. It uses 24 triangular prisms.
 
